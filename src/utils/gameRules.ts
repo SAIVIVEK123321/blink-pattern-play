@@ -1,91 +1,70 @@
 /**
- * Game rules define which squares should flash for each level
+ * Sequence Memory Game - Generate random sequences for each level
  */
 
 export interface Level {
   id: number;
   name: string;
   description: string;
-  hint: string;
-  rule: (index: number) => boolean;
+  sequenceLength: number;
+  speed: number; // milliseconds between flashes
 }
-
-// Helper function to check if a number is prime
-const isPrime = (num: number): boolean => {
-  if (num < 2) return false;
-  for (let i = 2; i <= Math.sqrt(num); i++) {
-    if (num % i === 0) return false;
-  }
-  return true;
-};
-
-// Convert 1D index to 2D coordinates (row, col)
-const indexToCoords = (index: number): { row: number; col: number } => {
-  return {
-    row: Math.floor(index / 5),
-    col: index % 5,
-  };
-};
 
 export const levels: Level[] = [
   {
     id: 1,
-    name: "Even Indices",
-    description: "Watch carefully and memorize the pattern...",
-    hint: "Look for squares at even positions (0, 2, 4, 6...)",
-    rule: (index: number) => index % 2 === 0,
+    name: "Warm Up",
+    description: "Remember a simple 3-step sequence",
+    sequenceLength: 3,
+    speed: 800,
   },
   {
     id: 2,
-    name: "Diagonals",
-    description: "The pattern is getting more complex...",
-    hint: "Focus on the diagonal lines across the grid",
-    rule: (index: number) => {
-      const { row, col } = indexToCoords(index);
-      return row === col || row + col === 4;
-    },
+    name: "Getting Tricky",
+    description: "Now try 4 steps...",
+    sequenceLength: 4,
+    speed: 700,
   },
   {
     id: 3,
-    name: "Prime Numbers",
-    description: "This one requires mathematical thinking...",
-    hint: "Think about prime numbers: 2, 3, 5, 7, 11, 13...",
-    rule: (index: number) => isPrime(index),
+    name: "Memory Challenge",
+    description: "5 steps and getting faster!",
+    sequenceLength: 5,
+    speed: 600,
   },
   {
     id: 4,
-    name: "Center Cluster",
-    description: "Focus on the center of the grid...",
-    hint: "The center square and its direct neighbors (up, down, left, right)",
-    rule: (index: number) => {
-      // Center is index 12, neighbors are 7, 11, 13, 17
-      return [7, 11, 12, 13, 17].includes(index);
-    },
+    name: "Expert Mode",
+    description: "6 steps - stay focused!",
+    sequenceLength: 6,
+    speed: 500,
   },
   {
     id: 5,
-    name: "Modulo Pattern",
-    description: "The final challenge uses a mathematical formula...",
-    hint: "For each square, check if (row + col) is divisible by 3",
-    rule: (index: number) => {
-      const { row, col } = indexToCoords(index);
-      return (row + col) % 3 === 0;
-    },
+    name: "Master Level",
+    description: "7 steps at high speed!",
+    sequenceLength: 7,
+    speed: 450,
+  },
+  {
+    id: 6,
+    name: "Grandmaster",
+    description: "8 steps - this is intense!",
+    sequenceLength: 8,
+    speed: 400,
   },
 ];
 
 /**
- * Get the indices of squares that should flash for a given level
+ * Generate a random sequence of square indices for the given level
  */
-export const getFlashingIndices = (levelId: number): number[] => {
+export const generateSequence = (levelId: number): number[] => {
   const level = levels.find((l) => l.id === levelId);
   if (!level) return [];
 
-  const indices: number[] = [];
-  for (let i = 0; i < 25; i++) {
-    if (level.rule(i)) {
-      indices.push(i);
-    }
+  const sequence: number[] = [];
+  for (let i = 0; i < level.sequenceLength; i++) {
+    sequence.push(Math.floor(Math.random() * 25));
   }
-  return indices;
+  return sequence;
 };

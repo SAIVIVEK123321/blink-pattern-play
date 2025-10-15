@@ -1,21 +1,13 @@
 import Square from "./Square";
 
 interface GridProps {
-  flashingIndices: number[];
-  selectedIndices: number[];
-  correctIndices?: number[];
-  incorrectIndices?: number[];
-  showFeedback: boolean;
+  currentFlashIndex: number;
   onSquareClick: (index: number) => void;
   disabled: boolean;
 }
 
 const Grid = ({
-  flashingIndices,
-  selectedIndices,
-  correctIndices = [],
-  incorrectIndices = [],
-  showFeedback,
+  currentFlashIndex,
   onSquareClick,
   disabled,
 }: GridProps) => {
@@ -28,11 +20,7 @@ const Grid = ({
         {Array.from({ length: totalSquares }).map((_, index) => (
           <Square
             key={index}
-            isFlashing={flashingIndices.includes(index)}
-            isSelected={selectedIndices.includes(index)}
-            isCorrect={correctIndices.includes(index)}
-            isIncorrect={incorrectIndices.includes(index)}
-            showFeedback={showFeedback}
+            isFlashing={currentFlashIndex === index}
             onClick={() => onSquareClick(index)}
             disabled={disabled}
           />

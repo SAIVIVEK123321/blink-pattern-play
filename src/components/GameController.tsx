@@ -1,80 +1,89 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import Grid from "./Grid";
 import LevelInfo from "./LevelInfo";
 import FeedbackDisplay from "./FeedbackDisplay";
-import { levels, getFlashingIndices } from "../utils/gameRules";
+import { levels, generateSequence } from "../utils/gameRules";
 
-type GamePhase = "instructions" | "watching" | "selecting" | "feedback" | "complete";
+type GamePhase = "instructions" | "watching" | "playing" | "feedback" | "complete";
 
 const GameController = () => {
   const [currentLevelId, setCurrentLevelId] = useState(1);
   const [phase, setPhase] = useState<GamePhase>("instructions");
-  const [selectedIndices, setSelectedIndices] = useState<number[]>([]);
-  const [correctIndices, setCorrectIndices] = useState<number[]>([]);
-  const [incorrectIndices, setIncorrectIndices] = useState<number[]>([]);
-  const [showHint, setShowHint] = useState(false);
+  const [sequence, setSequence] = useState<number[]>([]);
+  const [userSequence, setUserSequence] = useState<number[]>([]);
+  const [currentFlashIndex, setCurrentFlashIndex] = useState(-1);
+  const [isCorrect, setIsCorrect] = useState(false);
+  const [showFeedback, setShowFeedback] = useState(false);
   const [score, setScore] = useState(0);
-  const [timeLeft, setTimeLeft] = useState(10);
+  const [currentPlaybackIndex, setCurrentPlaybackIndex] = useState(0);
 
   const currentLevel = levels.find((l) => l.id === currentLevelId)!;
-  const flashingIndices = getFlashingIndices(currentLevelId);
 
-  // Handle flashing phase timer
+  // Play sequence animation
   useEffect(() => {
-    if (phase === "watching") {
-      const interval = setInterval(() => {
-        setTimeLeft((prev) => {
-          if (prev <= 1) {
-            clearInterval(interval);
-            setPhase("selecting");
-            return 0;
-          }
-          return prev - 1;
-        });
-      }, 1000);
+    if (phase === "watching" && sequence.length > 0) {
+      if (currentPlaybackIndex < sequence.length) {
+        const timer = setTimeout(() => {
+          setCurrentFlashIndex(sequence[currentPlaybackIndex]);
+          
+          const flashOffTimer = setTimeout(() => {
+            setCurrentFlashIndex(-1);
+            setCurrentPlaybackIndex((prev) => prev + 1);
+          }, currentLevel.speed);
 
-      return () => clearInterval(interval);
+          return () => clearTimeout(flashOffTimer);
+        }, currentLevel.speed + 200);
+
+        return () => clearTimeout(timer);
+      } else {
+        // Sequence complete, let user play
+        const timer = setTimeout(() => {
+          setPhase("playing");
+        }, 500);
+        return () => clearTimeout(timer);
+      }
     }
-  }, [phase]);
+  }, [phase, currentPlaybackIndex, sequence, currentLevel.speed]);
 
-  const startLevel = () => {
+  const startLevel = useCallback(() => {
+    const newSequence = generateSequence(currentLevelId);
+    setSequence(newSequence);
+    setUserSequence([]);
+    setCurrentFlashIndex(-1);
+    setCurrentPlaybackIndex(0);
+    setShowFeedback(false);
     setPhase("watching");
-    setSelectedIndices([]);
-    setCorrectIndices([]);
-    setIncorrectIndices([]);
-    setShowHint(false);
-    setTimeLeft(10);
-  };
+  }, [currentLevelId]);
 
-  const handleSquareClick = (index: number) => {
-    if (phase !== "selecting") return;
+  const handleSquareClick = useCallback((index: number) => {
+    if (phase !== "playing") return;
 
-    setSelectedIndices((prev) =>
-      prev.includes(index)
-        ? prev.filter((i) => i !== index)
-        : [...prev, index]
-    );
-  };
+    const newUserSequence = [...userSequence, index];
+    setUserSequence(newUserSequence);
 
-  const handleSubmit = () => {
-    // Determine which selections are correct and incorrect
-    const correct = selectedIndices.filter((i) => flashingIndices.includes(i));
-    const incorrect = selectedIndices.filter((i) => !flashingIndices.includes(i));
-    const missed = flashingIndices.filter((i) => !selectedIndices.includes(i));
+    // Flash the clicked square
+    setCurrentFlashIndex(index);
+    setTimeout(() => setCurrentFlashIndex(-1), 200);
 
-    setCorrectIndices(correct);
-    setIncorrectIndices([...incorrect, ...missed]);
-
-    // Check if all selections are correct and no squares were missed
-    const isCorrect = correct.length === flashingIndices.length && incorrect.length === 0;
-
-    if (isCorrect) {
-      setScore((prev) => prev + 100);
+    // Check if this click is correct
+    if (sequence[newUserSequence.length - 1] !== index) {
+      // Wrong click - immediate feedback
+      setIsCorrect(false);
+      setShowFeedback(true);
       setPhase("feedback");
-    } else {
+      return;
+    }
+
+    // Check if sequence is complete
+    if (newUserSequence.length === sequence.length) {
+      // Complete and correct!
+      setIsCorrect(true);
+      setShowFeedback(true);
+      setScore((prev) => prev + 100 * currentLevelId);
       setPhase("feedback");
     }
-  };
+  }, [phase, userSequence, sequence, currentLevelId]);
+
 
   const handleNextLevel = () => {
     if (currentLevelId < levels.length) {
@@ -85,12 +94,9 @@ const GameController = () => {
     }
   };
 
-  const handleRetry = () => {
+  const handleRetry = useCallback(() => {
     startLevel();
-  };
-
-  const isCorrect =
-    correctIndices.length === flashingIndices.length && incorrectIndices.length === 0;
+  }, [startLevel]);
 
   return (
     <div className="min-h-screen flex items-center justify-center p-4">
@@ -98,10 +104,10 @@ const GameController = () => {
         {/* Header */}
         <div className="text-center mb-8 animate-fade-in">
           <h1 className="text-5xl font-bold mb-2 bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
-            Pattern Decoder
+            Sequence Memory
           </h1>
           <p className="text-muted-foreground text-lg">
-            Observe. Memorize. Decode the pattern.
+            Watch. Remember. Repeat the sequence.
           </p>
           <div className="mt-4 flex justify-center gap-6 text-sm">
             <div className="flex items-center gap-2">
@@ -116,63 +122,48 @@ const GameController = () => {
         </div>
 
         {/* Level Info */}
-        {(phase === "instructions" || phase === "watching") && (
+        {phase === "instructions" && (
           <LevelInfo
             level={currentLevel}
             phase={phase}
-            timeLeft={timeLeft}
             onStart={startLevel}
           />
+        )}
+        
+        {phase === "watching" && (
+          <div className="text-center mb-6 animate-fade-in">
+            <p className="text-xl text-foreground font-semibold">
+              Watch carefully...
+            </p>
+          </div>
         )}
 
         {/* Grid */}
         <div className="flex justify-center mb-6">
           <Grid
-            flashingIndices={phase === "watching" ? flashingIndices : []}
-            selectedIndices={selectedIndices}
-            correctIndices={correctIndices}
-            incorrectIndices={incorrectIndices}
-            showFeedback={phase === "feedback"}
+            currentFlashIndex={currentFlashIndex}
             onSquareClick={handleSquareClick}
-            disabled={phase !== "selecting"}
+            disabled={phase !== "playing"}
           />
         </div>
 
-        {/* Selection Controls */}
-        {phase === "selecting" && (
+        {/* Playing Instructions */}
+        {phase === "playing" && (
           <div className="text-center space-y-4 animate-fade-in">
             <p className="text-lg text-foreground">
-              Select the squares that were flashing
+              Your turn! Repeat the sequence
             </p>
-            <div className="flex justify-center gap-4">
-              <button
-                onClick={handleSubmit}
-                disabled={selectedIndices.length === 0}
-                className="px-8 py-3 bg-primary text-primary-foreground rounded-lg font-semibold shadow-lg shadow-primary/30 hover:shadow-primary/50 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                Submit Answer
-              </button>
-              <button
-                onClick={() => setShowHint(!showHint)}
-                className="px-6 py-3 bg-muted text-muted-foreground rounded-lg font-semibold hover:bg-accent hover:text-accent-foreground transition-all"
-              >
-                {showHint ? "Hide" : "Show"} Hint
-              </button>
+            <div className="text-sm text-muted-foreground">
+              Progress: {userSequence.length} / {sequence.length}
             </div>
-            {showHint && (
-              <p className="text-accent text-sm animate-fade-in">
-                💡 {currentLevel.hint}
-              </p>
-            )}
           </div>
         )}
 
         {/* Feedback */}
-        {phase === "feedback" && (
+        {showFeedback && phase === "feedback" && (
           <FeedbackDisplay
             isCorrect={isCorrect}
-            correctCount={correctIndices.length}
-            totalCount={flashingIndices.length}
+            sequenceLength={sequence.length}
             onNext={handleNextLevel}
             onRetry={handleRetry}
             isLastLevel={currentLevelId === levels.length}
