@@ -15,8 +15,8 @@ const Grid = ({
   const totalSquares = gridSize * gridSize;
 
   return (
-    <div className="inline-block p-6 bg-grid-bg rounded-2xl border-2 border-grid-border shadow-2xl">
-      <div className="grid grid-cols-5 gap-3 w-full max-w-md">
+    <div className="inline-block p-8 bg-grid-bg rounded-2xl border-2 border-grid-border shadow-2xl">
+      <div className="grid grid-cols-5 gap-4 w-full max-w-2xl">
         {Array.from({ length: totalSquares }).map((_, index) => (
           <Square
             key={index}

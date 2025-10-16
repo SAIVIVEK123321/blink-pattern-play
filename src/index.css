@@ -65,12 +65,15 @@ All colors MUST be HSL.
   /* Pulse animation for flashing squares */
   @keyframes pulse-glow {
     0%, 100% {
-      box-shadow: 0 0 20px hsl(var(--primary) / 0.5), 0 0 40px hsl(var(--primary) / 0.3);
+      box-shadow: 0 0 40px hsl(var(--primary) / 0.8), 0 0 80px hsl(var(--primary) / 0.6), 0 0 120px hsl(var(--primary) / 0.4);
       background-color: hsl(var(--square-active));
+      border-color: hsl(var(--primary-glow));
     }
     50% {
-      box-shadow: 0 0 30px hsl(var(--primary-glow) / 0.7), 0 0 60px hsl(var(--primary-glow) / 0.5);
+      box-shadow: 0 0 60px hsl(var(--primary-glow) / 1), 0 0 120px hsl(var(--primary-glow) / 0.8), 0 0 180px hsl(var(--primary-glow) / 0.6);
       background-color: hsl(var(--primary-glow));
+      border-color: hsl(250 100% 85%);
+      transform: scale(1.05);
     }
   }
 
