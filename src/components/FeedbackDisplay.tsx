@@ -1,6 +1,8 @@
 interface FeedbackDisplayProps {
   isCorrect: boolean;
-  sequenceLength: number;
+  correctCount: number;
+  totalPattern: number;
+  incorrectCount: number;
   onNext: () => void;
   onRetry: () => void;
   isLastLevel: boolean;
@@ -8,7 +10,9 @@ interface FeedbackDisplayProps {
 
 const FeedbackDisplay = ({
   isCorrect,
-  sequenceLength,
+  correctCount,
+  totalPattern,
+  incorrectCount,
   onNext,
   onRetry,
   isLastLevel,
@@ -20,7 +24,7 @@ const FeedbackDisplay = ({
           <div className="text-6xl mb-4 animate-success">✨</div>
           <h2 className="text-3xl font-bold text-success">Perfect!</h2>
           <p className="text-lg text-foreground">
-            You remembered all {sequenceLength} steps correctly!
+            You found all {totalPattern} pattern squares correctly!
           </p>
           <button
             onClick={onNext}
@@ -32,9 +36,10 @@ const FeedbackDisplay = ({
       ) : (
         <>
           <div className="text-6xl mb-4">❌</div>
-          <h2 className="text-3xl font-bold text-error">Oops!</h2>
+          <h2 className="text-3xl font-bold text-error">Not Quite!</h2>
           <p className="text-lg text-foreground">
-            Wrong sequence. Try again!
+            You found {correctCount} of {totalPattern} correct squares
+            {incorrectCount > 0 && ` and selected ${incorrectCount} wrong square${incorrectCount !== 1 ? 's' : ''}`}.
           </p>
           <div className="flex justify-center gap-4">
             <button
