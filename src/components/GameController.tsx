@@ -2,7 +2,10 @@ import { useState, useEffect, useCallback } from "react";
 import Grid from "./Grid";
 import LevelInfo from "./LevelInfo";
 import FeedbackDisplay from "./FeedbackDisplay";
+import ThemeToggle from "./ThemeToggle";
 import { levels, generateSequence } from "../utils/gameRules";
+import { sounds } from "../utils/sounds";
+import { Clock } from "lucide-react";
 
 type GamePhase = "instructions" | "watching" | "playing" | "feedback" | "complete";
 
@@ -16,8 +19,20 @@ const GameController = () => {
   const [showFeedback, setShowFeedback] = useState(false);
   const [score, setScore] = useState(0);
   const [currentPlaybackIndex, setCurrentPlaybackIndex] = useState(0);
+  const [levelStartTime, setLevelStartTime] = useState<number>(0);
+  const [levelTime, setLevelTime] = useState(0);
 
   const currentLevel = levels.find((l) => l.id === currentLevelId)!;
+
+  // Timer effect
+  useEffect(() => {
+    if (phase === "playing") {
+      const interval = setInterval(() => {
+        setLevelTime(Math.floor((Date.now() - levelStartTime) / 1000));
+      }, 100);
+      return () => clearInterval(interval);
+    }
+  }, [phase, levelStartTime]);
 
   // Play sequence animation
   useEffect(() => {
@@ -39,6 +54,8 @@ const GameController = () => {
         // Sequence complete, let user play
         const timer = setTimeout(() => {
           setPhase("playing");
+          setLevelStartTime(Date.now());
+          setLevelTime(0);
         }, 500);
         return () => clearTimeout(timer);
       }
@@ -65,9 +82,13 @@ const GameController = () => {
     setCurrentFlashIndex(index);
     setTimeout(() => setCurrentFlashIndex(-1), 200);
 
+    // Play click sound
+    sounds.playClick();
+
     // Check if this click is correct
     if (sequence[newUserSequence.length - 1] !== index) {
       // Wrong click - immediate feedback
+      sounds.playWrong();
       setIsCorrect(false);
       setShowFeedback(true);
       setPhase("feedback");
@@ -77,6 +98,7 @@ const GameController = () => {
     // Check if sequence is complete
     if (newUserSequence.length === sequence.length) {
       // Complete and correct!
+      sounds.playCorrect();
       setIsCorrect(true);
       setShowFeedback(true);
       setScore((prev) => prev + 100 * currentLevelId);
@@ -100,6 +122,7 @@ const GameController = () => {
 
   return (
     <div className="min-h-screen flex items-center justify-center p-4">
+      <ThemeToggle />
       <div className="max-w-4xl w-full">
         {/* Header */}
         <div className="text-center mb-8 animate-fade-in">
@@ -118,6 +141,12 @@ const GameController = () => {
               <span className="text-muted-foreground">Score:</span>
               <span className="text-secondary font-bold text-lg">{score}</span>
             </div>
+            {phase === "playing" && (
+              <div className="flex items-center gap-2">
+                <Clock className="w-4 h-4 text-muted-foreground" />
+                <span className="text-accent font-bold text-lg">{levelTime}s</span>
+              </div>
+            )}
           </div>
         </div>
 

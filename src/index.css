@@ -47,6 +47,45 @@ All colors MUST be HSL.
     --square-correct: 142 76% 36%;
     --square-incorrect: 0 84% 60%;
   }
+
+  .light {
+    --background: 0 0% 98%;
+    --foreground: 240 10% 10%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 240 10% 10%;
+
+    --primary: 250 95% 63%;
+    --primary-foreground: 0 0% 98%;
+    --primary-glow: 250 95% 73%;
+
+    --secondary: 280 80% 60%;
+    --secondary-foreground: 0 0% 98%;
+
+    --success: 142 76% 36%;
+    --success-foreground: 0 0% 98%;
+
+    --error: 0 84% 60%;
+    --error-foreground: 0 0% 98%;
+
+    --muted: 240 5% 92%;
+    --muted-foreground: 240 4% 46%;
+
+    --accent: 280 80% 60%;
+    --accent-foreground: 0 0% 98%;
+
+    --border: 240 6% 90%;
+    --ring: 250 95% 63%;
+
+    /* Game-specific tokens for light mode */
+    --grid-bg: 0 0% 100%;
+    --grid-border: 240 6% 85%;
+    --square-inactive: 240 10% 96%;
+    --square-active: 250 95% 63%;
+    --square-selected: 280 80% 60%;
+    --square-correct: 142 76% 36%;
+    --square-incorrect: 0 84% 60%;
+  }
 }
 
 @layer base {
