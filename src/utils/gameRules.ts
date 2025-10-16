@@ -13,58 +13,100 @@ export interface Level {
 export const levels: Level[] = [
   {
     id: 1,
-    name: "Warm Up",
-    description: "Remember a simple 3-step sequence",
-    sequenceLength: 3,
+    name: "Even Indices",
+    description: "Flash all squares with even indices",
+    sequenceLength: 13,
     speed: 800,
   },
   {
     id: 2,
-    name: "Getting Tricky",
-    description: "Now try 4 steps...",
-    sequenceLength: 4,
+    name: "Diagonals",
+    description: "Flash all diagonal squares",
+    sequenceLength: 9,
     speed: 700,
   },
   {
     id: 3,
-    name: "Memory Challenge",
-    description: "5 steps and getting faster!",
-    sequenceLength: 5,
+    name: "Prime Numbers",
+    description: "Flash squares whose index is prime",
+    sequenceLength: 9,
     speed: 600,
   },
   {
     id: 4,
-    name: "Expert Mode",
-    description: "6 steps - stay focused!",
-    sequenceLength: 6,
+    name: "Center Cluster",
+    description: "Flash center and its 4 neighbors",
+    sequenceLength: 5,
     speed: 500,
   },
   {
     id: 5,
-    name: "Master Level",
-    description: "7 steps at high speed!",
-    sequenceLength: 7,
+    name: "Formula Challenge",
+    description: "Flash where (row + col) % 3 === 0",
+    sequenceLength: 9,
     speed: 450,
-  },
-  {
-    id: 6,
-    name: "Grandmaster",
-    description: "8 steps - this is intense!",
-    sequenceLength: 8,
-    speed: 400,
   },
 ];
 
 /**
- * Generate a random sequence of square indices for the given level
+ * Check if a number is prime
+ */
+const isPrime = (num: number): boolean => {
+  if (num < 2) return false;
+  for (let i = 2; i <= Math.sqrt(num); i++) {
+    if (num % i === 0) return false;
+  }
+  return true;
+};
+
+/**
+ * Generate a pattern-based sequence for the given level
  */
 export const generateSequence = (levelId: number): number[] => {
-  const level = levels.find((l) => l.id === levelId);
-  if (!level) return [];
-
+  const gridSize = 5;
   const sequence: number[] = [];
-  for (let i = 0; i < level.sequenceLength; i++) {
-    sequence.push(Math.floor(Math.random() * 25));
+
+  switch (levelId) {
+    case 1: // Even indices
+      for (let i = 0; i < 25; i++) {
+        if (i % 2 === 0) sequence.push(i);
+      }
+      break;
+
+    case 2: // Diagonals
+      for (let i = 0; i < 25; i++) {
+        const row = Math.floor(i / gridSize);
+        const col = i % gridSize;
+        if (row === col || row + col === 4) {
+          sequence.push(i);
+        }
+      }
+      break;
+
+    case 3: // Prime numbers
+      for (let i = 0; i < 25; i++) {
+        if (isPrime(i)) sequence.push(i);
+      }
+      break;
+
+    case 4: // Center cluster
+      const center = 12;
+      sequence.push(7, 11, center, 13, 17); // top, left, center, right, bottom
+      break;
+
+    case 5: // Formula: (row + col) % 3 === 0
+      for (let i = 0; i < 25; i++) {
+        const row = Math.floor(i / gridSize);
+        const col = i % gridSize;
+        if ((row + col) % 3 === 0) {
+          sequence.push(i);
+        }
+      }
+      break;
+
+    default:
+      break;
   }
+
   return sequence;
 };
